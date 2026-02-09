@@ -3,7 +3,14 @@ import { defineConfig } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  main: {},
+  main: {
+    build: {
+      rollupOptions: {
+        // Externalize heavy Node-only deps used by the reused Sessionly services
+        external: ['date-fns', 'node-pty', 'uuid']
+      }
+    }
+  },
   preload: {},
   renderer: {
     resolve: {

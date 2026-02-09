@@ -1,8 +1,19 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
-  "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*"],
+  "include": [
+    "electron.vite.config.*",
+    "src/main/**/*",
+    "src/preload/**/*",
+    "warjiang-sessionly/**/*"
+  ],
   "compilerOptions": {
     "composite": true,
-    "types": ["electron-vite/node"]
+    "types": ["electron-vite/node"],
+    "baseUrl": "./",
+    "paths": {
+      "date-fns": ["./node_modules/date-fns"],
+      "node-pty": ["./node_modules/node-pty"],
+      "uuid": ["./node_modules/uuid"]
+    }
   }
 }

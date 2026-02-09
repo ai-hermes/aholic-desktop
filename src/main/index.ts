@@ -1,7 +1,12 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, dialog } from 'electron'
+import { writeFile } from 'fs/promises'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+
+// Utility to check if running in development mode (electron-vite sets this in dev)
+const isDev = !!process.env['ELECTRON_RENDERER_URL']
+
+// Note: main process currently provides only a minimal window shell.
 
 function createWindow(): void {
   // Create the browser window.
@@ -28,7 +33,7 @@ function createWindow(): void {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+  if (isDev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -40,17 +45,146 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  app.setAppUserModelId('com.electron')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+  // Basic IPC handlers needed by the Sessionly React layer
+  ipcMain.handle('theme:getNative', async () => {
+    const isDark = nativeTheme.shouldUseDarkColors
+    return { success: true, data: isDark ? 'dark' : 'light' }
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  nativeTheme.on('updated', () => {
+    const isDark = nativeTheme.shouldUseDarkColors
+    BrowserWindow.getAllWindows().forEach((window) => {
+      window.webContents.send('theme:changed', isDark ? 'dark' : 'light')
+    })
+  })
+
+  ipcMain.handle('sessions:getAll', async () => {
+    try {
+      const { getAllSessions } =
+        await import('../../warjiang-sessionly/electron/main/services/session-store')
+      const groups = await getAllSessions()
+      return { success: true, data: groups }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get sessions'
+      }
+    }
+  })
+  ipcMain.handle(
+    'sessions:get',
+    async (_event, params: { sessionId: string; projectEncoded: string }) => {
+      try {
+        const { getSession } =
+          await import('../../warjiang-sessionly/electron/main/services/session-store')
+        const session = await getSession(params.sessionId, params.projectEncoded)
+        if (!session) {
+          return { success: false, error: 'Session not found' }
+        }
+        return { success: true, data: session }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to get session'
+        }
+      }
+    }
+  )
+
+  ipcMain.handle(
+    'sessions:exportMarkdown',
+    async (event, params: { sessionId: string; projectEncoded: string }) => {
+      try {
+        const { getSession } =
+          await import('../../warjiang-sessionly/electron/main/services/session-store')
+        const { sessionToMarkdown, generateExportFilename } =
+          await import('../../warjiang-sessionly/electron/main/services/markdown-export')
+
+        const session = await getSession(params.sessionId, params.projectEncoded)
+        if (!session) {
+          return { success: false, error: 'Session not found' }
+        }
+
+        const markdown = sessionToMarkdown(session)
+        const defaultFilename = generateExportFilename(session)
+
+        const window = BrowserWindow.fromWebContents(event.sender)
+        const result = await dialog.showSaveDialog(window!, {
+          title: 'Export Session as Markdown',
+          defaultPath: defaultFilename,
+          filters: [
+            { name: 'Markdown', extensions: ['md'] },
+            { name: 'All Files', extensions: ['*'] }
+          ]
+        })
+
+        if (result.canceled || !result.filePath) {
+          return { success: false, error: 'Export cancelled' }
+        }
+
+        await writeFile(result.filePath, markdown, 'utf-8')
+        return { success: true, data: result.filePath }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to export session'
+        }
+      }
+    }
+  )
+
+  ipcMain.handle('terminal:spawn', async (event, options?: any) => {
+    try {
+      const terminalManager = await import('./terminal-manager')
+      const window = BrowserWindow.fromWebContents(event.sender)
+      if (!window) {
+        return { success: false, error: 'Window not found' }
+      }
+      const id = terminalManager.spawn(window, options)
+      return { success: true, data: id }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to spawn terminal'
+      }
+    }
+  })
+
+  ipcMain.on('terminal:write', async (_event, params: { id: string; data: string }) => {
+    try {
+      const terminalManager = await import('./terminal-manager')
+      terminalManager.write(params.id, params.data)
+    } catch (error) {
+      console.error('Failed to write to terminal:', error)
+    }
+  })
+
+  ipcMain.on(
+    'terminal:resize',
+    async (_event, params: { id: string; cols: number; rows: number }) => {
+      try {
+        const terminalManager = await import('./terminal-manager')
+        terminalManager.resize(params.id, params.cols, params.rows)
+      } catch (error) {
+        console.error('Failed to resize terminal:', error)
+      }
+    }
+  )
+
+  ipcMain.handle('terminal:kill', async (_event, id: string) => {
+    try {
+      const terminalManager = await import('./terminal-manager')
+      terminalManager.kill(id)
+      return { success: true, data: undefined }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to kill terminal'
+      }
+    }
+  })
 
   createWindow()
 
