@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import type { Terminal as XTerm } from 'xterm'
 import { Terminal } from './Terminal'
 import { useTerminal } from './useTerminal'
@@ -16,12 +16,22 @@ export function TerminalPanel({ cwd, sessionId, onClose }: TerminalPanelProps): 
     }
   })
 
+  // Use refs to avoid the infinite loop: spawn → terminalId changes → kill ref
+  // changes → useEffect re-runs → kill() then spawn() → repeat forever
+  const spawnRef = useRef(spawn)
+  const killRef = useRef(kill)
+
   useEffect(() => {
-    spawn({ cwd, sessionId })
+    spawnRef.current = spawn
+    killRef.current = kill
+  })
+
+  useEffect(() => {
+    spawnRef.current({ cwd, sessionId })
     return () => {
-      kill()
+      killRef.current()
     }
-  }, [cwd, sessionId, spawn, kill])
+  }, [cwd, sessionId])
 
   const handleTerminalReady = useCallback(
     (xterm: XTerm) => {
