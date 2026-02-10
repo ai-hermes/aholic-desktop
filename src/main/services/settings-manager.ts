@@ -2,6 +2,7 @@ import Store from 'electron-store'
 
 export interface AppSettings {
   ANTHROPIC_BASE_URL: string
+  ANTHROPIC_AUTH_TOKEN: string
   API_TIMEOUT_MS: string
   ANTHROPIC_MODEL: string
   ANTHROPIC_DEFAULT_HAIKU_MODEL: string
@@ -11,6 +12,7 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   ANTHROPIC_BASE_URL: 'https://api.anthropic.com/v1',
+  ANTHROPIC_AUTH_TOKEN: '',
   API_TIMEOUT_MS: '3000000',
   ANTHROPIC_MODEL: 'claude-haiku-4-5-20251001',
   ANTHROPIC_DEFAULT_HAIKU_MODEL: 'claude-haiku-4-5-20251001',

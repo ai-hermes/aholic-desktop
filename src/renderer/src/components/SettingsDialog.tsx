@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 // Define AppSettings interface to match the backend
 interface AppSettings {
   ANTHROPIC_BASE_URL: string
+  ANTHROPIC_AUTH_TOKEN: string
   API_TIMEOUT_MS: string
   ANTHROPIC_MODEL: string
   ANTHROPIC_DEFAULT_HAIKU_MODEL: string
@@ -13,6 +14,7 @@ interface AppSettings {
 
 const DEFAULT_SETTINGS: AppSettings = {
   ANTHROPIC_BASE_URL: 'https://api.anthropic.com/v1',
+  ANTHROPIC_AUTH_TOKEN: '',
   API_TIMEOUT_MS: '3000000',
   ANTHROPIC_MODEL: 'claude-haiku-4-5-20251001',
   ANTHROPIC_DEFAULT_HAIKU_MODEL: 'claude-haiku-4-5-20251001',
@@ -114,6 +116,16 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps): React.
                   className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={settings.ANTHROPIC_BASE_URL}
                   onChange={(e) => handleChange('ANTHROPIC_BASE_URL', e.target.value)}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-sm font-medium text-foreground">Anthropic Auth Token</label>
+                <input
+                  type="password"
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={settings.ANTHROPIC_AUTH_TOKEN}
+                  onChange={(e) => handleChange('ANTHROPIC_AUTH_TOKEN', e.target.value)}
                 />
               </div>
 

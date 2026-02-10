@@ -25,13 +25,17 @@ export function createClaudeChatSession(params?: {
   resume?: string
   baseUrl?: string
   timeoutMs?: number
+  env?: Record<string, string | undefined>
+  allowedTools?: string[]
 }): ClaudeChatSession {
   const session = unstable_v2_createSession({
     model: params?.model ?? 'claude-sonnet-4-5-20250929',
     includePartialMessages: params?.includePartialMessages ?? true,
     resume: params?.resume,
     baseURL: params?.baseUrl,
-    timeout: params?.timeoutMs ? params.timeoutMs : undefined
+    timeout: params?.timeoutMs ? params.timeoutMs : undefined,
+    env: params?.env,
+    allowedTools: params?.allowedTools
   } as never)
 
   return {
@@ -44,6 +48,7 @@ export function createClaudeChatSession(params?: {
 
         for await (const msg of session.stream()) {
           if (msg.type === 'stream_event') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const event = (msg as any).event
             if (event?.type === 'content_block_delta' && event?.delta?.type === 'text_delta') {
               const delta = String(event.delta.text ?? '')

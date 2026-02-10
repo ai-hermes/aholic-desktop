@@ -22,11 +22,50 @@ export class ClaudeChatManager {
     const id = randomUUID()
     const settings = settingsManager.getAll()
 
+    const ANTHROPIC_AUTH_TOKEN = settings.ANTHROPIC_AUTH_TOKEN
+    const ANTHROPIC_BASE_URL = settings.ANTHROPIC_BASE_URL
+    const ANTHROPIC_MODEL = settings.ANTHROPIC_MODEL
+    const ANTHROPIC_DEFAULT_HAIKU_MODEL = settings.ANTHROPIC_DEFAULT_HAIKU_MODEL
+    const ANTHROPIC_DEFAULT_OPUS_MODEL = settings.ANTHROPIC_DEFAULT_OPUS_MODEL
+    const ANTHROPIC_DEFAULT_SONNET_MODEL = settings.ANTHROPIC_DEFAULT_SONNET_MODEL
+
     const session = createClaudeChatSession({
       model: params?.model,
       resume: params?.resume,
-      baseUrl: settings.ANTHROPIC_BASE_URL,
-      timeoutMs: parseInt(settings.API_TIMEOUT_MS, 10)
+      baseUrl: ANTHROPIC_BASE_URL,
+      timeoutMs: parseInt(settings.API_TIMEOUT_MS, 10),
+      env: {
+        PATH: process.env.PATH,
+        DISABLE_TELEMETRY: '1',
+        DISABLE_ERROR_REPORTING: '1',
+        CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
+        MCP_TIMEOUT: '60000',
+        ANTHROPIC_AUTH_TOKEN,
+        ANTHROPIC_BASE_URL,
+        API_TIMEOUT_MS: settings.API_TIMEOUT_MS,
+        ANTHROPIC_MODEL,
+        ANTHROPIC_DEFAULT_HAIKU_MODEL,
+        ANTHROPIC_DEFAULT_OPUS_MODEL,
+        ANTHROPIC_DEFAULT_SONNET_MODEL
+      },
+      allowedTools: [
+        'Task',
+        'Bash',
+        'Glob',
+        'Grep',
+        'LS',
+        'ExitPlanMode',
+        'Read',
+        'Edit',
+        'MultiEdit',
+        'Write',
+        'NotebookEdit',
+        'WebFetch',
+        'TodoWrite',
+        'WebSearch',
+        'BashOutput',
+        'KillBash'
+      ]
     })
     this.chats.set(id, { id, session, streaming: false })
     return { chatId: id }
