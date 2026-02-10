@@ -6,7 +6,9 @@ function App(): React.JSX.Element {
   return (
     <ThemeProvider>
       <Layout>
-        <SessionsPageShell />
+        <div className="h-full">
+          <SessionsPageShell />
+        </div>
       </Layout>
     </ThemeProvider>
   )

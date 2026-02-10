@@ -62,6 +62,31 @@ const appElectronAPI = {
     return () => {
       ipcRenderer.removeListener('terminal:exit', subscription)
     }
+  },
+
+  // Claude Chat
+  claudeChatCreate: (params?: {
+    model?: string
+  }): Promise<{ success: boolean; data?: { chatId: string }; error?: string }> =>
+    ipcRenderer.invoke('claudeChat:create', params),
+  claudeChatSend: (params: {
+    chatId: string
+    input: string
+  }): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('claudeChat:send', params),
+  claudeChatClose: (params: { chatId: string }): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('claudeChat:close', params),
+  onClaudeChatEvent: (
+    callback: (payload: { chatId: string; event: unknown }) => void
+  ): (() => void) => {
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      payload: { chatId: string; event: unknown }
+    ): void => callback(payload)
+    ipcRenderer.on('claudeChat:event', subscription)
+    return () => {
+      ipcRenderer.removeListener('claudeChat:event', subscription)
+    }
   }
 }
 

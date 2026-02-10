@@ -4,6 +4,8 @@
 import { useEffect, useState } from 'react'
 import type { ProjectGroup, Session } from '../types'
 import { SessionView } from '../features/SessionView'
+import { ChatPanel } from '../chat/ChatPanel'
+import { Plus } from 'lucide-react'
 
 export function SessionsPageShell(): React.JSX.Element {
   const [groups, setGroups] = useState<ProjectGroup[]>([])
@@ -95,7 +97,16 @@ export function SessionsPageShell(): React.JSX.Element {
       <div className="w-80 shrink-0 overflow-y-auto border-r border-border p-3 text-xs">
         {groups.map((group) => (
           <div key={group.project} className="mb-3">
-            <div className="font-medium text-foreground">{group.project}</div>
+            <div className="flex items-center justify-between px-2 pb-2">
+              <div className="font-medium text-foreground">{group.project}</div>
+              <button
+                onClick={() => setSelected(null)}
+                className="rounded-md p-1 hover:bg-accent hover:text-accent-foreground"
+                title="New Chat"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
             <div className="mt-1 space-y-1">
               {group.sessions.map((s) => (
                 <button
@@ -116,11 +127,15 @@ export function SessionsPageShell(): React.JSX.Element {
         ))}
       </div>
       <div className="flex-1 overflow-hidden">
-        <SessionView
-          session={currentSession}
-          isLoading={!!selected && !currentSession}
-          error={error}
-        />
+        {selected ? (
+          <SessionView
+            session={currentSession}
+            isLoading={!!selected && !currentSession}
+            error={error}
+          />
+        ) : (
+          <ChatPanel />
+        )}
       </div>
     </div>
   )
