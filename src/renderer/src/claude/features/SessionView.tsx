@@ -21,6 +21,7 @@ export function SessionView({ session, isLoading, error }: SessionViewProps): Re
   const [showTerminal, setShowTerminal] = useState(false)
   const [messages, setMessages] = useState<ProcessedMessage[]>([])
   const [chatId, setChatId] = useState<string | null>(null)
+  const chatIdRef = useRef<string | null>(null)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
@@ -30,25 +31,33 @@ export function SessionView({ session, isLoading, error }: SessionViewProps): Re
   useEffect(() => {
     if (session) {
       setMessages(session.messages)
-      setChatId(null) // Reset chat connection on session change
+      setChatId(null)
+      chatIdRef.current = null
       setChatError(null)
     } else {
       setMessages([])
     }
   }, [session])
 
+  // Sync ref with state
+  useEffect(() => {
+    chatIdRef.current = chatId
+  }, [chatId])
+
   // Auto-scroll
+  const lastMessageText = messages[messages.length - 1]?.textContent
   useEffect(() => {
     const el = listRef.current
     if (!el) return
     el.scrollTop = el.scrollHeight
-  }, [messages.length, messages[messages.length - 1]?.textContent])
+  }, [messages.length, lastMessageText])
 
-  // Listen for chat events
+  // Listen for chat events - run once on mount
   useEffect(() => {
-    if (!chatId) return
     const unsubscribe = window.electron.onClaudeChatEvent((payload) => {
-      if (payload.chatId !== chatId) return
+      // Use ref to check current chat ID without re-subscribing
+      if (!chatIdRef.current || payload.chatId !== chatIdRef.current) return
+
       const event = payload.event as ClaudeChatEvent
 
       if (event.type === 'assistant_text_delta') {
@@ -96,16 +105,16 @@ export function SessionView({ session, isLoading, error }: SessionViewProps): Re
     })
 
     return unsubscribe
-  }, [chatId])
+  }, []) // Empty dependency array to run once
 
   // Cleanup chat on unmount or session change
   useEffect(() => {
     return () => {
-      if (chatId) {
-        void window.electron.claudeChatClose({ chatId })
+      if (chatIdRef.current) {
+        void window.electron.claudeChatClose({ chatId: chatIdRef.current })
       }
     }
-  }, [chatId])
+  }, []) // Cleanup on unmount
 
   const onSend = async (): Promise<void> => {
     const text = input.trim()
@@ -142,6 +151,7 @@ export function SessionView({ session, isLoading, error }: SessionViewProps): Re
         }
         currentChatId = res.data.chatId
         setChatId(currentChatId)
+        chatIdRef.current = currentChatId
       }
 
       const res = await window.electron.claudeChatSend({ chatId: currentChatId, input: text })

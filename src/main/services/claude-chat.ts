@@ -45,15 +45,20 @@ export function createClaudeChatSession(params?: {
     stream: async function* () {
       try {
         let fullText = ''
+        let previousTextLength = 0
 
         for await (const msg of session.stream()) {
+          // console.log('ClaudeChat: Raw MSG', msg.type, JSON.stringify(msg).slice(0, 200))
           if (msg.type === 'stream_event') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const event = (msg as any).event
+            // console.log('ClaudeChat: Stream Event', event?.type, event?.delta?.type)
+
             if (event?.type === 'content_block_delta' && event?.delta?.type === 'text_delta') {
               const delta = String(event.delta.text ?? '')
               if (delta) {
                 fullText += delta
+                previousTextLength = fullText.length
                 yield { type: 'assistant_text_delta', delta }
               }
             }
@@ -63,6 +68,11 @@ export function createClaudeChatSession(params?: {
           const text = extractAssistantText(msg)
           if (text) {
             fullText = text
+            if (fullText.length > previousTextLength) {
+              const delta = fullText.slice(previousTextLength)
+              previousTextLength = fullText.length
+              yield { type: 'assistant_text_delta', delta }
+            }
           }
         }
 
