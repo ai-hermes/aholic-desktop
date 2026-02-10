@@ -3,17 +3,20 @@ import { writeFile } from 'fs/promises'
 import { join } from 'path'
 import icon from '../../resources/logo.png?asset'
 import type { TerminalOptions } from './terminal-manager'
+import { loadWindowState, saveWindowState } from './window-state'
 
 // Utility to check if running in development mode (electron-vite sets this in dev)
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
 
 // Note: main process currently provides only a minimal window shell.
 
-function createWindow(): void {
+async function createWindow(): Promise<void> {
+  const persistedState = await loadWindowState()
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: persistedState?.width ?? 900,
+    height: persistedState?.height ?? 670,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -21,6 +24,27 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
+  })
+
+  if (persistedState?.isMaximized) {
+    mainWindow.maximize()
+  }
+
+  let saveTimer: NodeJS.Timeout | undefined
+  const scheduleSave = (): void => {
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      void saveWindowState(mainWindow)
+    }, 250)
+  }
+
+  mainWindow.on('resized', scheduleSave)
+  mainWindow.on('moved', scheduleSave)
+  mainWindow.on('maximize', scheduleSave)
+  mainWindow.on('unmaximize', scheduleSave)
+  mainWindow.on('close', () => {
+    if (saveTimer) clearTimeout(saveTimer)
+    void saveWindowState(mainWindow)
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -184,7 +208,7 @@ app.whenReady().then(() => {
     }
   })
 
-  createWindow()
+  void createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
