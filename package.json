@@ -4,6 +4,10 @@
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ai-hermes/aholic-desktop.git"
+  },
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
