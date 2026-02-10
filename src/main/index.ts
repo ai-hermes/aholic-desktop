@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain, nativeTheme, dialog } from 'electron'
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/logo.png?asset'
 import type { TerminalOptions } from './terminal-manager'
 
 // Utility to check if running in development mode (electron-vite sets this in dev)
