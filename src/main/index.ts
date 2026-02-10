@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, nativeTheme, dialog } from 'electro
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
+import type { TerminalOptions } from './terminal-manager'
 
 // Utility to check if running in development mode (electron-vite sets this in dev)
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
@@ -47,7 +48,7 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   app.setAppUserModelId('com.electron')
 
-  // Basic IPC handlers needed by the Sessionly React layer
+  // Basic IPC handlers needed by the renderer
   ipcMain.handle('theme:getNative', async () => {
     const isDark = nativeTheme.shouldUseDarkColors
     return { success: true, data: isDark ? 'dark' : 'light' }
@@ -132,7 +133,7 @@ app.whenReady().then(() => {
     }
   )
 
-  ipcMain.handle('terminal:spawn', async (event, options?: any) => {
+  ipcMain.handle('terminal:spawn', async (event, options?: TerminalOptions) => {
     try {
       const terminalManager = await import('./terminal-manager')
       const window = BrowserWindow.fromWebContents(event.sender)

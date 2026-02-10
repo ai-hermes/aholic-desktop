@@ -11,7 +11,7 @@ interface SessionViewProps {
   error: string | null
 }
 
-export function SessionView({ session, isLoading, error }: SessionViewProps) {
+export function SessionView({ session, isLoading, error }: SessionViewProps): React.JSX.Element {
   const [showTerminal, setShowTerminal] = useState(false)
 
   if (isLoading) {

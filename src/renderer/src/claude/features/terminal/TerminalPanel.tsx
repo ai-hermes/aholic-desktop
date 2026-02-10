@@ -9,7 +9,7 @@ interface TerminalPanelProps {
   onClose: () => void
 }
 
-export function TerminalPanel({ cwd, sessionId, onClose }: TerminalPanelProps) {
+export function TerminalPanel({ cwd, sessionId, onClose }: TerminalPanelProps): React.JSX.Element {
   const { isRunning, error, spawn, write, resize, kill, setXterm } = useTerminal({
     onExit: () => {
       // keep panel open; user can close manually
@@ -21,7 +21,7 @@ export function TerminalPanel({ cwd, sessionId, onClose }: TerminalPanelProps) {
     return () => {
       kill()
     }
-  }, [])
+  }, [cwd, sessionId, spawn, kill])
 
   const handleTerminalReady = useCallback(
     (xterm: XTerm) => {

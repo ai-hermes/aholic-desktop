@@ -9,7 +9,11 @@ interface MessageListProps {
   scrollToBottom?: boolean
 }
 
-export function MessageList({ messages, subagents, scrollToBottom = false }: MessageListProps) {
+export function MessageList({
+  messages,
+  subagents,
+  scrollToBottom = false
+}: MessageListProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

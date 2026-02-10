@@ -1,11 +1,11 @@
-// Thin shell that will later host the full Sessionly sessions UI.
+// Thin shell that will later host the full sessions UI.
 // For now we just prove wiring and data loading from Electron.
 
 import { useEffect, useState } from 'react'
 import type { ProjectGroup, Session } from '../types'
 import { SessionView } from '../features/SessionView'
 
-export function SessionsPageShell() {
+export function SessionsPageShell(): React.JSX.Element {
   const [groups, setGroups] = useState<ProjectGroup[]>([])
   const [currentSession, setCurrentSession] = useState<Session | null>(null)
   const [selected, setSelected] = useState<{ id: string; projectEncoded: string } | null>(null)
@@ -15,12 +15,12 @@ export function SessionsPageShell() {
   useEffect(() => {
     let cancelled = false
 
-    async function load() {
+    async function load(): Promise<void> {
       try {
-        const res = await (window.electron as any).sessionsGetAll()
+        const res = await window.electron.sessionsGetAll()
         if (!cancelled) {
           if (res.success && res.data) {
-            setGroups(res.data)
+            setGroups(res.data as ProjectGroup[])
             setError(null)
           } else {
             setError(res.error || 'Failed to load sessions')
@@ -47,11 +47,11 @@ export function SessionsPageShell() {
     if (!selected) return
     let cancelled = false
 
-    async function loadSession() {
+    async function loadSession(): Promise<void> {
       try {
         const current = selected
         if (!current) return
-        const res = await (window.electron as any).sessionsGet(current.id, current.projectEncoded)
+        const res = await window.electron.sessionsGet(current.id, current.projectEncoded)
         if (!cancelled) {
           if (res.success && res.data) {
             setCurrentSession(res.data as Session)

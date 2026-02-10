@@ -44,16 +44,16 @@ export function ToolCallBlock({
   toolResult,
   subagent,
   defaultExpanded = false
-}: ToolCallBlockProps) {
+}: ToolCallBlockProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(defaultExpanded)
 
   const getToolInputPreview = (): string | null => {
-    const input = toolUse.input as any
-    if (input.file_path) return input.file_path as string
-    if (input.command) return (input.command as string).slice(0, 50)
-    if (input.pattern) return input.pattern as string
-    if (input.url) return input.url as string
-    if (input.query) return input.query as string
+    const input = toolUse.input
+    if ('file_path' in input && typeof input.file_path === 'string') return input.file_path
+    if ('command' in input && typeof input.command === 'string') return input.command.slice(0, 50)
+    if ('pattern' in input && typeof input.pattern === 'string') return input.pattern
+    if ('url' in input && typeof input.url === 'string') return input.url
+    if ('query' in input && typeof input.query === 'string') return input.query
     return null
   }
 

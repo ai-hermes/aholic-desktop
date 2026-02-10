@@ -20,7 +20,7 @@ async function pLimit<T>(
   const results: T[] = new Array(tasks.length)
   let currentIndex = 0
 
-  async function worker() {
+  async function worker(): Promise<void> {
     while (currentIndex < tasks.length) {
       const index = currentIndex++
       results[index] = await tasks[index]()

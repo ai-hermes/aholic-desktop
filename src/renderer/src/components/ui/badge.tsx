@@ -21,7 +21,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: BadgeVariant
 }
 
-function Badge({ className, variant = 'default', ...props }: BadgeProps) {
+function Badge({ className, variant = 'default', ...props }: BadgeProps): React.JSX.Element {
   const base =
     'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
   return <div className={cn(base, badgeVariantClasses(variant), className)} {...props} />

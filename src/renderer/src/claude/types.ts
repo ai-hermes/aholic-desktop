@@ -1,4 +1,4 @@
-// Lightweight copies of the core types from Sessionly's electron/shared/session-types.ts
+// Lightweight copies of the core session types.
 
 export interface ThinkingBlock {
   type: 'thinking'
@@ -10,7 +10,7 @@ export interface ToolUseBlock {
   type: 'tool_use'
   id: string
   name: string
-  input: Record<string, any>
+  input: Record<string, unknown>
   agentId?: string
 }
 

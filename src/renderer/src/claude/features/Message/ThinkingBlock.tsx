@@ -7,7 +7,10 @@ interface ThinkingBlockProps {
   defaultExpanded?: boolean
 }
 
-export function ThinkingBlock({ block, defaultExpanded = false }: ThinkingBlockProps) {
+export function ThinkingBlock({
+  block,
+  defaultExpanded = false
+}: ThinkingBlockProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(defaultExpanded)
 
   const previewText = block.thinking.slice(0, 100).replace(/\n/g, ' ')

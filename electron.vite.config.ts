@@ -6,7 +6,7 @@ export default defineConfig({
   main: {
     build: {
       rollupOptions: {
-        // Externalize heavy Node-only deps used by the reused Sessionly services
+        // Externalize heavy Node-only deps used by main-process services
         external: ['date-fns', 'node-pty', 'uuid']
       }
     }

@@ -1,6 +1,6 @@
-import { ThemeProvider } from './sessionly/theme/ThemeContext'
-import { Layout } from './sessionly/layout/Layout'
-import { SessionsPageShell } from './sessionly/sessions/SessionsPageShell'
+import { ThemeProvider } from './claude/theme/ThemeProvider'
+import { Layout } from './claude/layout/LayoutProvider'
+import { SessionsPageShell } from './claude/sessions/SessionsPageShell'
 
 function App(): React.JSX.Element {
   return (

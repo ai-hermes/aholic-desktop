@@ -2,7 +2,7 @@ import type { ElectronAPI as BaseElectronAPI } from '@electron-toolkit/preload'
 
 type NativeTheme = 'dark' | 'light'
 
-interface SessionlyElectronAPI extends BaseElectronAPI {
+interface AppElectronAPI extends BaseElectronAPI {
   getNativeTheme: () => Promise<{ success: boolean; data?: NativeTheme }>
   onThemeChange: (callback: (theme: NativeTheme) => void) => () => void
   sessionsGetAll: () => Promise<{
@@ -37,7 +37,7 @@ interface SessionlyElectronAPI extends BaseElectronAPI {
 
 declare global {
   interface Window {
-    electron: SessionlyElectronAPI
+    electron: AppElectronAPI
     api: unknown
   }
 }

@@ -7,7 +7,10 @@ interface SubagentBlockProps {
   defaultExpanded?: boolean
 }
 
-export function SubagentBlock({ subagent, defaultExpanded = false }: SubagentBlockProps) {
+export function SubagentBlock({
+  subagent,
+  defaultExpanded = false
+}: SubagentBlockProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(defaultExpanded)
 
   return (
@@ -45,7 +48,7 @@ export function SubagentBlock({ subagent, defaultExpanded = false }: SubagentBlo
   )
 }
 
-function SubagentMessage({ message }: { message: ProcessedMessage }) {
+function SubagentMessage({ message }: { message: ProcessedMessage }): React.JSX.Element {
   const isUser = message.role === 'user'
   const hasTools = message.toolUseBlocks.length > 0
 

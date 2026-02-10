@@ -21,13 +21,17 @@ interface SessionHeaderProps {
   onToggleTerminal: () => void
 }
 
-export function SessionHeader({ session, showTerminal, onToggleTerminal }: SessionHeaderProps) {
+export function SessionHeader({
+  session,
+  showTerminal,
+  onToggleTerminal
+}: SessionHeaderProps): React.JSX.Element {
   const [copied, setCopied] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
   const resumeCommand = `claude --resume ${session.id}`
 
-  const handleCopyCommand = async () => {
+  const handleCopyCommand = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(resumeCommand)
       setCopied(true)
@@ -37,11 +41,11 @@ export function SessionHeader({ session, showTerminal, onToggleTerminal }: Sessi
     }
   }
 
-  const handleExport = async () => {
+  const handleExport = async (): Promise<void> => {
     if (isExporting) return
     setIsExporting(true)
     try {
-      const response = await (window.electron as any).sessionsExportMarkdown(
+      const response = await window.electron.sessionsExportMarkdown(
         session.id,
         session.projectEncoded
       )

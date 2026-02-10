@@ -211,7 +211,7 @@ export function sessionToMarkdown(session: Session): string {
 
   lines.push('---')
   lines.push('')
-  lines.push(`*Exported from Sessionly on ${format(new Date(), "MMMM d, yyyy 'at' h:mm a")}*`)
+  lines.push(`*Exported from Aholic on ${format(new Date(), "MMMM d, yyyy 'at' h:mm a")}*`)
 
   return lines.join('\n')
 }

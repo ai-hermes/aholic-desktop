@@ -10,7 +10,7 @@ interface TerminalProps {
   onResize?: (cols: number, rows: number) => void
 }
 
-export function Terminal({ onReady, onData, onResize }: TerminalProps) {
+export function Terminal({ onReady, onData, onResize }: TerminalProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const xtermRef = useRef<XTerm | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -24,8 +24,10 @@ export function Terminal({ onReady, onData, onResize }: TerminalProps) {
 
     try {
       // Guard against internal renderer not being ready yet.
-      const termAny = xtermRef.current as any
-      const hasDimensions = !!termAny?._core?._renderService?.dimensions
+      const maybeCore = (
+        xtermRef.current as unknown as { _core?: { _renderService?: { dimensions?: unknown } } }
+      )._core
+      const hasDimensions = !!maybeCore?._renderService?.dimensions
       if (!hasDimensions) return
 
       fitAddonRef.current.fit()
@@ -47,7 +49,7 @@ export function Terminal({ onReady, onData, onResize }: TerminalProps) {
     let resizeObserver: ResizeObserver | null = null
     let dataDisposable: { dispose: () => void } | null = null
 
-    const waitForNonZeroSize = (el: HTMLElement, timeoutMs = 2000) => {
+    const waitForNonZeroSize = (el: HTMLElement, timeoutMs = 2000): Promise<boolean> => {
       if (el.offsetWidth > 0 && el.offsetHeight > 0) return Promise.resolve(true)
       return new Promise<boolean>((resolve) => {
         const timeout = window.setTimeout(() => {
@@ -68,7 +70,7 @@ export function Terminal({ onReady, onData, onResize }: TerminalProps) {
       })
     }
 
-    const init = async () => {
+    const init = async (): Promise<void> => {
       // Delay initialization so StrictMode's mount->unmount probe does not
       // create an xterm instance that schedules work after dispose.
       await new Promise<void>((resolve) => {

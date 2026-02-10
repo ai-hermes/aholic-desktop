@@ -13,7 +13,11 @@ interface MessageBubbleProps {
   showTimestamp?: boolean
 }
 
-export function MessageBubble({ message, subagents, showTimestamp = true }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  subagents,
+  showTimestamp = true
+}: MessageBubbleProps): React.JSX.Element {
   const isUser = message.role === 'user'
 
   const formattedTime = useMemo(() => {

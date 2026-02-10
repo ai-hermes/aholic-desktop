@@ -7,7 +7,7 @@ interface CodeBlockProps {
   language?: string
 }
 
-export function CodeBlock({ code, language }: CodeBlockProps) {
+export function CodeBlock({ code, language }: CodeBlockProps): React.JSX.Element {
   const ref = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
