@@ -275,6 +275,10 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('app:getVersion', () => {
+    return { success: true, data: app.getVersion() }
+  })
+
   void createWindow()
 
   app.on('activate', function () {

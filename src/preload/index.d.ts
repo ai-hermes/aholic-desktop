@@ -49,6 +49,8 @@ interface AppElectronAPI extends BaseElectronAPI {
   settingsGet: (key: string) => Promise<{ success: boolean; data?: unknown; error?: string }>
   settingsGetAll: () => Promise<{ success: boolean; data?: unknown; error?: string }>
   settingsSet: (key: string, value: unknown) => Promise<{ success: boolean; error?: string }>
+
+  getAppVersion: () => Promise<{ success: boolean; data?: string }>
 }
 
 declare global {

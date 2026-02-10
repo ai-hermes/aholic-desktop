@@ -95,7 +95,11 @@ const appElectronAPI = {
   settingsGetAll: (): Promise<{ success: boolean; data?: unknown; error?: string }> =>
     ipcRenderer.invoke('settings:getAll'),
   settingsSet: (key: string, value: unknown): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('settings:set', { key, value })
+    ipcRenderer.invoke('settings:set', { key, value }),
+
+  // App
+  getAppVersion: (): Promise<{ success: boolean; data?: string }> =>
+    ipcRenderer.invoke('app:getVersion')
 }
 
 const api = {}

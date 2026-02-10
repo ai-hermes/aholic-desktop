@@ -47,9 +47,19 @@ export function SessionView({ session, isLoading, error }: SessionViewProps): Re
   // Auto-scroll
   const lastMessageText = messages[messages.length - 1]?.textContent
   useEffect(() => {
-    const el = listRef.current
-    if (!el) return
-    el.scrollTop = el.scrollHeight
+    const scrollToBottom = (): void => {
+      const el = listRef.current
+      if (!el) return
+
+      // Always scroll if it's a new message (length change) or if we're already near bottom (streaming)
+      // Actually for this app, let's just force scroll for now as requested
+      el.scrollTop = el.scrollHeight
+    }
+
+    scrollToBottom()
+    // Small timeout to ensure DOM has updated (e.g. images loading or layout shifts)
+    const timeoutId = setTimeout(scrollToBottom, 50)
+    return () => clearTimeout(timeoutId)
   }, [messages.length, lastMessageText])
 
   // Listen for chat events - run once on mount

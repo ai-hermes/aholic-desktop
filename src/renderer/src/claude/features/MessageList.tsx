@@ -1,4 +1,3 @@
-import { useRef, useEffect } from 'react'
 import { MessageSquareOff } from 'lucide-react'
 import type { ProcessedMessage, SubagentSession } from '../types'
 import { MessageBubble } from './Message/MessageBubble'
@@ -6,22 +5,9 @@ import { MessageBubble } from './Message/MessageBubble'
 interface MessageListProps {
   messages: ProcessedMessage[]
   subagents?: Record<string, SubagentSession>
-  scrollToBottom?: boolean
 }
 
-export function MessageList({
-  messages,
-  subagents,
-  scrollToBottom = false
-}: MessageListProps): React.JSX.Element {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (scrollToBottom && containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
-    }
-  }, [messages, scrollToBottom])
-
+export function MessageList({ messages, subagents }: MessageListProps): React.JSX.Element {
   if (messages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center bg-background">
@@ -34,7 +20,7 @@ export function MessageList({
   }
 
   return (
-    <div ref={containerRef} className="h-full overflow-y-auto bg-background scrollbar-thin">
+    <div className="bg-background">
       <div className="space-y-4 max-w-4xl mx-auto px-6 py-6">
         {messages.map((message, index) => (
           <div
