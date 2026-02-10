@@ -62,8 +62,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('sessions:getAll', async () => {
     try {
-      const { getAllSessions } =
-        await import('../../warjiang-sessionly/electron/main/services/session-store')
+      const { getAllSessions } = await import('./services/session-store')
       const groups = await getAllSessions()
       return { success: true, data: groups }
     } catch (error) {
@@ -77,8 +76,7 @@ app.whenReady().then(() => {
     'sessions:get',
     async (_event, params: { sessionId: string; projectEncoded: string }) => {
       try {
-        const { getSession } =
-          await import('../../warjiang-sessionly/electron/main/services/session-store')
+        const { getSession } = await import('./services/session-store')
         const session = await getSession(params.sessionId, params.projectEncoded)
         if (!session) {
           return { success: false, error: 'Session not found' }
@@ -97,10 +95,9 @@ app.whenReady().then(() => {
     'sessions:exportMarkdown',
     async (event, params: { sessionId: string; projectEncoded: string }) => {
       try {
-        const { getSession } =
-          await import('../../warjiang-sessionly/electron/main/services/session-store')
+        const { getSession } = await import('./services/session-store')
         const { sessionToMarkdown, generateExportFilename } =
-          await import('../../warjiang-sessionly/electron/main/services/markdown-export')
+          await import('./services/markdown-export')
 
         const session = await getSession(params.sessionId, params.projectEncoded)
         if (!session) {

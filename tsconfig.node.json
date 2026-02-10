@@ -4,7 +4,7 @@
     "electron.vite.config.*",
     "src/main/**/*",
     "src/preload/**/*",
-    "warjiang-sessionly/**/*"
+    "src/main/shared/**/*"
   ],
   "compilerOptions": {
     "composite": true,
