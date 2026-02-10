@@ -45,6 +45,10 @@ interface AppElectronAPI extends BaseElectronAPI {
   }) => Promise<{ success: boolean; error?: string }>
   claudeChatClose: (params: { chatId: string }) => Promise<{ success: boolean; error?: string }>
   onClaudeChatEvent: (callback: (payload: { chatId: string; event: unknown }) => void) => () => void
+
+  settingsGet: (key: string) => Promise<{ success: boolean; data?: unknown; error?: string }>
+  settingsGetAll: () => Promise<{ success: boolean; data?: unknown; error?: string }>
+  settingsSet: (key: string, value: unknown) => Promise<{ success: boolean; error?: string }>
 }
 
 declare global {

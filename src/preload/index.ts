@@ -87,7 +87,15 @@ const appElectronAPI = {
     return () => {
       ipcRenderer.removeListener('claudeChat:event', subscription)
     }
-  }
+  },
+
+  // Settings
+  settingsGet: (key: string): Promise<{ success: boolean; data?: unknown; error?: string }> =>
+    ipcRenderer.invoke('settings:get', key),
+  settingsGetAll: (): Promise<{ success: boolean; data?: unknown; error?: string }> =>
+    ipcRenderer.invoke('settings:getAll'),
+  settingsSet: (key: string, value: unknown): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('settings:set', { key, value })
 }
 
 const api = {}

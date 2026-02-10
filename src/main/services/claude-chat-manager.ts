@@ -13,12 +13,21 @@ type ChatEntry = {
   streaming: boolean
 }
 
+import { settingsManager } from './settings-manager'
+
 export class ClaudeChatManager {
   private chats = new Map<string, ChatEntry>()
 
   create(params?: { model?: string; resume?: string }): { chatId: string } {
     const id = randomUUID()
-    const session = createClaudeChatSession({ model: params?.model, resume: params?.resume })
+    const settings = settingsManager.getAll()
+
+    const session = createClaudeChatSession({
+      model: params?.model,
+      resume: params?.resume,
+      baseUrl: settings.ANTHROPIC_BASE_URL,
+      timeoutMs: parseInt(settings.API_TIMEOUT_MS, 10)
+    })
     this.chats.set(id, { id, session, streaming: false })
     return { chatId: id }
   }

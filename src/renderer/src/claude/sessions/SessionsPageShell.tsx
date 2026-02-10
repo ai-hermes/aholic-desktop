@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react'
 import type { ProjectGroup, Session } from '../types'
 import { SessionView } from '../features/SessionView'
 import { ChatPanel } from '../chat/ChatPanel'
-import { Plus } from 'lucide-react'
+import { Plus, Settings } from 'lucide-react'
+import { SettingsDialog } from '../../components/SettingsDialog'
 
 export function SessionsPageShell(): React.JSX.Element {
   const [groups, setGroups] = useState<ProjectGroup[]>([])
@@ -13,6 +14,7 @@ export function SessionsPageShell(): React.JSX.Element {
   const [selected, setSelected] = useState<{ id: string; projectEncoded: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -99,13 +101,22 @@ export function SessionsPageShell(): React.JSX.Element {
           <div key={group.project} className="mb-3">
             <div className="flex items-center justify-between px-2 pb-2">
               <div className="font-medium text-foreground">{group.project}</div>
-              <button
-                onClick={() => setSelected(null)}
-                className="rounded-md p-1 hover:bg-accent hover:text-accent-foreground"
-                title="New Chat"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="rounded-md p-1 hover:bg-accent hover:text-accent-foreground"
+                  title="Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setSelected(null)}
+                  className="rounded-md p-1 hover:bg-accent hover:text-accent-foreground"
+                  title="New Chat"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <div className="mt-1 space-y-1">
               {group.sessions.map((s) => (
@@ -137,6 +148,8 @@ export function SessionsPageShell(): React.JSX.Element {
           <ChatPanel />
         )}
       </div>
+
+      <SettingsDialog isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   )
 }

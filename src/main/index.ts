@@ -243,6 +243,38 @@ app.whenReady().then(() => {
     return { success: true, data: undefined }
   })
 
+  // Settings IPC
+  ipcMain.handle('settings:get', async (_event, key: string) => {
+    try {
+      const { settingsManager } = await import('./services/settings-manager')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { success: true, data: settingsManager.get(key as any) }
+    } catch {
+      return { success: false, error: 'Failed to get setting' }
+    }
+  })
+
+  ipcMain.handle('settings:getAll', async () => {
+    try {
+      const { settingsManager } = await import('./services/settings-manager')
+      return { success: true, data: settingsManager.getAll() }
+    } catch {
+      return { success: false, error: 'Failed to get all settings' }
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ipcMain.handle('settings:set', async (_event, params: { key: string; value: any }) => {
+    try {
+      const { settingsManager } = await import('./services/settings-manager')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      settingsManager.set(params.key as any, params.value)
+      return { success: true }
+    } catch {
+      return { success: false, error: 'Failed to set setting' }
+    }
+  })
+
   void createWindow()
 
   app.on('activate', function () {

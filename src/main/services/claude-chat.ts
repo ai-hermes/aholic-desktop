@@ -23,11 +23,15 @@ export function createClaudeChatSession(params?: {
   model?: string
   includePartialMessages?: boolean
   resume?: string
+  baseUrl?: string
+  timeoutMs?: number
 }): ClaudeChatSession {
   const session = unstable_v2_createSession({
     model: params?.model ?? 'claude-sonnet-4-5-20250929',
     includePartialMessages: params?.includePartialMessages ?? true,
-    resume: params?.resume
+    resume: params?.resume,
+    baseURL: params?.baseUrl,
+    timeout: params?.timeoutMs ? params.timeoutMs : undefined
   } as never)
 
   return {
