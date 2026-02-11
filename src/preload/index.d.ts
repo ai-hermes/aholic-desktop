@@ -33,6 +33,24 @@ interface AppElectronAPI extends BaseElectronAPI {
   terminalKill: (id: string) => Promise<{ success: boolean; error?: string }>
   onTerminalData: (callback: (id: string, data: string) => void) => () => void
   onTerminalExit: (callback: (id: string, exitCode: number, signal?: number) => void) => () => void
+
+  claudeChatCreate: (params?: { model?: string; resume?: string }) => Promise<{
+    success: boolean
+    data?: { chatId: string }
+    error?: string
+  }>
+  claudeChatSend: (params: {
+    chatId: string
+    input: string
+  }) => Promise<{ success: boolean; error?: string }>
+  claudeChatClose: (params: { chatId: string }) => Promise<{ success: boolean; error?: string }>
+  onClaudeChatEvent: (callback: (payload: { chatId: string; event: unknown }) => void) => () => void
+
+  settingsGet: (key: string) => Promise<{ success: boolean; data?: unknown; error?: string }>
+  settingsGetAll: () => Promise<{ success: boolean; data?: unknown; error?: string }>
+  settingsSet: (key: string, value: unknown) => Promise<{ success: boolean; error?: string }>
+
+  getAppVersion: () => Promise<{ success: boolean; data?: string }>
 }
 
 declare global {

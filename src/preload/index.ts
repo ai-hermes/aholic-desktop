@@ -62,7 +62,44 @@ const appElectronAPI = {
     return () => {
       ipcRenderer.removeListener('terminal:exit', subscription)
     }
-  }
+  },
+
+  // Claude Chat
+  claudeChatCreate: (params?: {
+    model?: string
+  }): Promise<{ success: boolean; data?: { chatId: string }; error?: string }> =>
+    ipcRenderer.invoke('claudeChat:create', params),
+  claudeChatSend: (params: {
+    chatId: string
+    input: string
+  }): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('claudeChat:send', params),
+  claudeChatClose: (params: { chatId: string }): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('claudeChat:close', params),
+  onClaudeChatEvent: (
+    callback: (payload: { chatId: string; event: unknown }) => void
+  ): (() => void) => {
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      payload: { chatId: string; event: unknown }
+    ): void => callback(payload)
+    ipcRenderer.on('claudeChat:event', subscription)
+    return () => {
+      ipcRenderer.removeListener('claudeChat:event', subscription)
+    }
+  },
+
+  // Settings
+  settingsGet: (key: string): Promise<{ success: boolean; data?: unknown; error?: string }> =>
+    ipcRenderer.invoke('settings:get', key),
+  settingsGetAll: (): Promise<{ success: boolean; data?: unknown; error?: string }> =>
+    ipcRenderer.invoke('settings:getAll'),
+  settingsSet: (key: string, value: unknown): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('settings:set', { key, value }),
+
+  // App
+  getAppVersion: (): Promise<{ success: boolean; data?: string }> =>
+    ipcRenderer.invoke('app:getVersion')
 }
 
 const api = {}

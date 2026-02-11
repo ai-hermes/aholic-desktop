@@ -4,6 +4,9 @@
 import { useEffect, useState } from 'react'
 import type { ProjectGroup, Session } from '../types'
 import { SessionView } from '../features/SessionView'
+import { ChatPanel } from '../chat/ChatPanel'
+import { Plus, Settings } from 'lucide-react'
+import { SettingsDialog } from '../../components/SettingsDialog'
 
 export function SessionsPageShell(): React.JSX.Element {
   const [groups, setGroups] = useState<ProjectGroup[]>([])
@@ -11,6 +14,7 @@ export function SessionsPageShell(): React.JSX.Element {
   const [selected, setSelected] = useState<{ id: string; projectEncoded: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +78,16 @@ export function SessionsPageShell(): React.JSX.Element {
     }
   }, [selected])
 
+  const [appVersion, setAppVersion] = useState<string>('')
+
+  useEffect(() => {
+    window.electron.getAppVersion().then((res) => {
+      if (res.success && res.data) {
+        setAppVersion(res.data)
+      }
+    })
+  }, [])
+
   if (loading) {
     return <div className="p-4 text-sm text-muted-foreground">Loading Claude sessions...</div>
   }
@@ -92,36 +106,67 @@ export function SessionsPageShell(): React.JSX.Element {
 
   return (
     <div className="flex h-full w-full overflow-hidden">
-      <div className="w-80 shrink-0 overflow-y-auto border-r border-border p-3 text-xs">
-        {groups.map((group) => (
-          <div key={group.project} className="mb-3">
-            <div className="font-medium text-foreground">{group.project}</div>
-            <div className="mt-1 space-y-1">
-              {group.sessions.map((s) => (
-                <button
-                  key={s.id}
-                  className={`w-full rounded border border-border bg-card p-2 text-left hover:bg-accent ${
-                    selected?.id === s.id ? 'ring-1 ring-ring' : ''
-                  }`}
-                  onClick={() => setSelected({ id: s.id, projectEncoded: group.projectEncoded })}
-                >
-                  <div className="line-clamp-2 text-[11px] text-foreground">{s.firstMessage}</div>
-                  <div className="mt-1 text-[10px] text-muted-foreground">
-                    {s.messageCount} messages
-                  </div>
-                </button>
-              ))}
+      <div className="flex w-80 shrink-0 flex-col border-r border-border bg-muted/10 text-xs">
+        <div className="flex-1 overflow-y-auto p-3">
+          {groups.map((group) => (
+            <div key={group.project} className="mb-3">
+              <div className="mt-1 space-y-1">
+                {group.sessions.map((s) => (
+                  <button
+                    key={s.id}
+                    className={`w-full rounded border border-border bg-card p-2 text-left hover:bg-accent ${
+                      selected?.id === s.id ? 'ring-1 ring-ring' : ''
+                    }`}
+                    onClick={() => setSelected({ id: s.id, projectEncoded: group.projectEncoded })}
+                  >
+                    <div className="line-clamp-2 text-[11px] text-foreground">{s.firstMessage}</div>
+                    <div className="mt-1 text-[10px] text-muted-foreground">
+                      {s.messageCount} messages
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-border p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              v{appVersion}
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="rounded-md p-2 hover:bg-accent hover:text-accent-foreground"
+                title="Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setSelected(null)}
+                className="rounded-md p-2 hover:bg-accent hover:text-accent-foreground"
+                title="New Chat"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
             </div>
           </div>
-        ))}
+        </div>
       </div>
       <div className="flex-1 overflow-hidden">
-        <SessionView
-          session={currentSession}
-          isLoading={!!selected && !currentSession}
-          error={error}
-        />
+        {selected ? (
+          <SessionView
+            session={currentSession}
+            isLoading={!!selected && !currentSession}
+            error={error}
+          />
+        ) : (
+          <ChatPanel />
+        )}
       </div>
+
+      <SettingsDialog isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   )
 }

@@ -4,11 +4,14 @@ import { join } from 'path'
 import icon from '../../resources/logo.png?asset'
 import type { TerminalOptions } from './terminal-manager'
 import { loadWindowState, saveWindowState } from './window-state'
+import { ClaudeChatManager } from './services/claude-chat-manager'
 
 // Utility to check if running in development mode (electron-vite sets this in dev)
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
 
 // Note: main process currently provides only a minimal window shell.
+
+const claudeChatManager = new ClaudeChatManager()
 
 async function createWindow(): Promise<void> {
   const persistedState = await loadWindowState()
@@ -19,7 +22,8 @@ async function createWindow(): Promise<void> {
     height: persistedState?.height ?? 670,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    title: 'aholic',
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -208,6 +212,73 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle(
+    'claudeChat:create',
+    async (_event, params?: { model?: string; resume?: string }) => {
+      try {
+        const { chatId } = claudeChatManager.create({
+          model: params?.model,
+          resume: params?.resume
+        })
+        return { success: true, data: { chatId } }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to create chat'
+        }
+      }
+    }
+  )
+
+  ipcMain.handle('claudeChat:send', async (event, params: { chatId: string; input: string }) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) {
+      return { success: false, error: 'Window not found' }
+    }
+    return await claudeChatManager.sendAndStream(params.chatId, params.input, window.webContents)
+  })
+
+  ipcMain.handle('claudeChat:close', async (_event, params: { chatId: string }) => {
+    claudeChatManager.close(params.chatId)
+    return { success: true, data: undefined }
+  })
+
+  // Settings IPC
+  ipcMain.handle('settings:get', async (_event, key: string) => {
+    try {
+      const { settingsManager } = await import('./services/settings-manager')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { success: true, data: settingsManager.get(key as any) }
+    } catch {
+      return { success: false, error: 'Failed to get setting' }
+    }
+  })
+
+  ipcMain.handle('settings:getAll', async () => {
+    try {
+      const { settingsManager } = await import('./services/settings-manager')
+      return { success: true, data: settingsManager.getAll() }
+    } catch {
+      return { success: false, error: 'Failed to get all settings' }
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ipcMain.handle('settings:set', async (_event, params: { key: string; value: any }) => {
+    try {
+      const { settingsManager } = await import('./services/settings-manager')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      settingsManager.set(params.key as any, params.value)
+      return { success: true }
+    } catch {
+      return { success: false, error: 'Failed to set setting' }
+    }
+  })
+
+  ipcMain.handle('app:getVersion', () => {
+    return { success: true, data: app.getVersion() }
+  })
+
   void createWindow()
 
   app.on('activate', function () {
@@ -224,6 +295,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  claudeChatManager.closeAll()
 })
 
 // In this file you can include the rest of your app's specific main process

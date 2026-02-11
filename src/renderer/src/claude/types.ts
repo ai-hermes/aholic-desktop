@@ -36,6 +36,7 @@ export interface ProcessedMessage {
   toolUseBlocks: ToolUseBlock[]
   toolResults: Record<string, ToolResultBlock>
   model?: string
+  isStreaming?: boolean
 }
 
 export interface SubagentSession {
